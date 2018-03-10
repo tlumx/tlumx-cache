@@ -76,8 +76,6 @@ class FileCachePool extends AbstractCacheItemPool
      */
     protected function setDataToStorage($key, $value, $ttl)
     {
-
-
         $filename = $this->getFile($key);
         $path = pathinfo($filename, PATHINFO_DIRNAME);
 
@@ -88,11 +86,8 @@ class FileCachePool extends AbstractCacheItemPool
             mkdir($path, 0775, true);
         }
 
-        if (file_put_contents($filename, $value, LOCK_EX)) {
-            return true;
-        }
-
-        return false;
+        $res = (bool) file_put_contents($filename, $value, LOCK_EX);
+        return $res;
     }
 
     /**
