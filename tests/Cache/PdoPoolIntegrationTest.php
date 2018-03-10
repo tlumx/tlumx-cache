@@ -40,7 +40,10 @@ class PdoPoolIntegrationTest extends CachePoolTest
 
         $this->dbh->exec($sql);
 
-        $this->cacheDriver = new PdoCachePool($this->dbh);
+        $this->cacheDriver = new PdoCachePool($this->dbh, [
+            'table' => 'cache',
+            'automatic_clean' => 10000
+        ]);
 
         return $this->cacheDriver;
     }
@@ -50,5 +53,85 @@ class PdoPoolIntegrationTest extends CachePoolTest
         $this->cacheDriver = null;
         $this->dbh = null;
         ;
+    }
+
+    public function testUpdateWhenSetDataToStorage()
+    {
+        $pool = $this->createCachePool();
+        $item = $pool->getItem('key1');
+        $item->set('abc');
+        $pool->save($item);
+
+        $item->set('xyz');
+        $pool->save($item);
+
+        $fooItem = $pool->getItem('key1');
+        $this->assertTrue($fooItem->isHit());
+        $this->assertEquals('xyz', $fooItem->get());
+    }
+
+    public function testDeleteArrayEmptyDataFromStorage()
+    {
+        $pool = $this->createCachePool();
+        $this->assertTrue($pool->deleteItems([]));
+    }
+
+    public function testClearOldData0()
+    {
+        $pool = $this->createCachePool();
+
+        $reflectionClass = new \ReflectionClass('Tlumx\Cache\PdoCachePool');
+        $reflectionProperty = $reflectionClass->getProperty('automaticClean');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($pool, 0);
+
+        $reflectionMethod = $reflectionClass->getMethod('clearOldData');
+        $reflectionMethod->setAccessible(true);
+
+        $this->assertNull($reflectionMethod->invokeArgs($pool, []));
+    }
+
+    public function testClearOldData1()
+    {
+        $pool = $this->createCachePool();
+
+        $reflectionClass = new \ReflectionClass('Tlumx\Cache\PdoCachePool');
+        $reflectionProperty = $reflectionClass->getProperty('automaticClean');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($pool, 1);
+
+        $reflectionMethod = $reflectionClass->getMethod('clearOldData');
+        $reflectionMethod->setAccessible(true);
+
+        $this->assertNull($reflectionMethod->invokeArgs($pool, []));
+    }
+
+    public function testPrefix()
+    {
+        $pool = $this->createCachePool();
+        $this->assertEquals('tlumxframework_', $pool->getPrefix());
+        $pool->setPrefix('tlumxframework_tmp_cache1');
+        $this->assertEquals('tlumxframework_tmp_cache1', $pool->getPrefix());
+    }
+
+    public function testTtl()
+    {
+        $pool = $this->createCachePool();
+        $this->assertEquals(3600, $pool->getTtl());
+        $pool->setTtl(300);
+        $this->assertEquals(300, $pool->getTtl());
+    }
+
+    public function testGetItemsDeferredSave()
+    {
+        $pool = $this->createCachePool();
+        $item = $pool->getItem('key');
+        $item->set('4711');
+        $return = $pool->saveDeferred($item);
+        $this->assertTrue($return);
+
+        $items = $pool->getItems(['key']);
+        $item1 = $items['key'];
+        $this->assertEquals('4711', $item1->get());
     }
 }
