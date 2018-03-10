@@ -68,9 +68,7 @@ class ApcuCachePool extends AbstractCacheItemPool
     protected function getArrayDataFromStorage(array $keys)
     {
         $result = apcu_fetch($keys);
-        if ($result === false) {
-            return [];
-        }
+
         return $result;
     }
 
