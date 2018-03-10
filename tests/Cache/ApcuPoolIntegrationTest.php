@@ -11,6 +11,7 @@ namespace Tlumx\Tests\Cache;
 
 use Cache\IntegrationTests\CachePoolTest;
 use Tlumx\Cache\ApcuCachePool;
+use Tlumx\Cache\Exception\CacheException;
 
 class ApcuPoolIntegrationTest extends CachePoolTest
 {
@@ -39,5 +40,34 @@ class ApcuPoolIntegrationTest extends CachePoolTest
     public static function tearDownAfterClass()
     {
         ini_set('apc.use_request_time', self::$useRequestTime);
+    }
+
+    public function testPrefix()
+    {
+        $pool = $this->createCachePool();
+        $this->assertEquals('tlumxframework_tmp_cache', $pool->getPrefix());
+        $pool->setPrefix('tlumxframework_tmp_cache1');
+        $this->assertEquals('tlumxframework_tmp_cache1', $pool->getPrefix());
+    }
+
+    public function testTtl()
+    {
+        $pool = $this->createCachePool();
+        $this->assertEquals(3600, $pool->getTtl());
+        $pool->setTtl(300);
+        $this->assertEquals(300, $pool->getTtl());
+    }
+
+    public function testGetItemsDeferredSave()
+    {
+        $pool = $this->createCachePool();
+        $item = $pool->getItem('key');
+        $item->set('4711');
+        $return = $pool->saveDeferred($item);
+        $this->assertTrue($return);
+
+        $items = $pool->getItems(['key']);
+        $item1 = $items['key'];
+        $this->assertEquals('4711', $item1->get());
     }
 }
