@@ -77,7 +77,7 @@ class PdoCachePool extends AbstractCacheItemPool
             'id' => $key
         ]);
         if ($stmt->fetchColumn()) {
-            $sql = "UPDATE ".$this->table." SET value = :value, expire = :expire WHERE id = :key";
+            $sql = "UPDATE ".$this->table." SET value = :value, expire = :expire WHERE id = :id";
             $stmt = $this->dbh->prepare($sql);
             $stmt->execute([
                 ':id' => $key,
