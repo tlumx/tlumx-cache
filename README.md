@@ -20,11 +20,11 @@ $ composer require tlumx/tlumx-cache:"1.0.*"
 
 ## Usage
 
-See: https://tlumx.github.io/tlumx-cache/
+See: https://docs.tlumx.com/tlumx-cache/
 
 
 ## Resources
 
 - File issues at https://github.com/tlumx/tlumx-cache/issues
-- Documentation is at https://tlumx.github.io/tlumx-cache/
+- Documentation is at https://docs.tlumx.com/tlumx-cache/
 - [License File](LICENSE.md) for more information.
